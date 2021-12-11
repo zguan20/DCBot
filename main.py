@@ -8,15 +8,6 @@ import enum
 client = discord.Client()
 
 
-'''
-Text Channels   919001388711825438
-Voice Channels   919017619779096576
-general   918987327131492384
-General   918987327131492386
-repos   918987327131492385
-1号玩家   918987327131492387
-'''
-
 class id(enum.Enum):
     wolf = 1
     civilian = 2
@@ -41,25 +32,15 @@ rooms = [919017619779096576, 919305506730954782, 919306040938487808,
          919306205212586065, 919306317376667650, 919306397118791690,
          919306467167858799, 919306605894455327, 919306683363229736]
 
-'''
-idToChannels = {
-    id.wolf : 919306750929305630,
-    1 : 919017619779096576,
-    2 : 919305506730954782,
-    3 : 919306040938487808,
-    id.witch : 919306205212586065,
-    id.hunter : 919306317376667650,
-    id.prophet : 919306397118791690,
-    "groupChannel" : 919306850493677578
-}
-'''
+
 
 playersDict = {}
 
 identityList = [id.wolf, id.wolf, id.wolf, id.civilian, id.civilian, id.civilian, id.prophet, id.witch, id.hunter]
 
 class Player:
-    def __init__(self, member):
+    def __init__(self, member, number):
+        self.number = number
         self.member = member
         self.identity = None
         self.survivalStatus = True
@@ -67,7 +48,7 @@ class Player:
         self.skillsFlag = False
         self.vote = -1
 
-requiredPlayerNum = 1
+requiredPlayerNum = 9
 playersList = []
 readyCount = 0
 gameInProgress = False
@@ -105,15 +86,15 @@ async def night():
         playersList[i].identity = identityList[i]  # assign id to player
 
         #move players to their rooms
-        if (identityList[i] != id.civilian):
-            to_channel = client.get_channel(idToChannels[identityList[i]])
+        if identityList[i] == id.wolf:
+            to_channel = client.get_channel(919306750929305630)
         else:
-            to_channel = client.get_channel(idToChannels[civilianCounter])
+            to_channel = client.get_channel(rooms[i])
         await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
 
 async def day():
     for i in range(0, len(playersList)):
-        to_channel = client.get_channel(idToChannels["groupChannel"])
+        to_channel = client.get_channel(919306850493677578)
         await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
 
 async def startGame():
@@ -121,21 +102,67 @@ async def startGame():
     global rooms
     random.shuffle(identityList)
     random.shuffle(identityList)
-    random.shuffle(rooms)
-    random.shuffle(rooms)
+    # random.shuffle(rooms)
+    # random.shuffle(rooms)
     global idToChannels
 
     civilianCounter = 1
     for i in range(0, len(playersList)):
         playersList[i].identity = identityList[i] #assign id to player
+        cur_member = playersList[i].member
+        print(cur_member.name)
+        # print(playersList[i].number)
 
-        if(identityList[i] != id.wolf): #already defined a room for wolf.
-            if (identityList[i] != id.civilian):
-                idToChannels[identityList[i]] = rooms[i];
-                to_channel = client.get_channel(idToChannels[identityList[i]])
-            else:
-                idToChannels[civilianCounter] = rooms[i];
-                to_channel = client.get_channel(idToChannels[civilianCounter])
+        if playersList[i].number == 1:
+            role = discord.utils.get(cur_member.guild.roles, name="一号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 2:
+            role = discord.utils.get(cur_member.guild.roles, name="二号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 3:
+            role = discord.utils.get(cur_member.guild.roles, name="三号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 4:
+            role = discord.utils.get(cur_member.guild.roles, name="四号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 5:
+            role = discord.utils.get(cur_member.guild.roles, name="五号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 6:
+            role = discord.utils.get(cur_member.guild.roles, name="六号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 7:
+            role = discord.utils.get(cur_member.guild.roles, name="七号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 8:
+            role = discord.utils.get(cur_member.guild.roles, name="八号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+        if playersList[i].number == 9:
+            role = discord.utils.get(cur_member.guild.roles, name="九号")
+            await cur_member.add_roles(role)
+            print(identityList[i])
+
+        idToChannels[civilianCounter] = rooms[i]
+        to_channel = client.get_channel(rooms[i])
+
+        if identityList[i] == id.wolf:
+            to_channel = client.get_channel(919306750929305630)
+
+        # if(identityList[i] != id.wolf): #already defined a room for wolf.
+        #     if (identityList[i] != id.civilian):
+        #         idToChannels[identityList[i]] = rooms[i]
+        #         to_channel = client.get_channel(rooms[i])
+        #     else:
+        #         idToChannels[civilianCounter] = rooms[i]
+        #         to_channel = client.get_channel(rooms[i])
 
         if identityList[i] == id.wolf:
             pass
@@ -194,12 +221,18 @@ async def on_message(message):
     authorID = message.author.id
     member = await theServer.fetch_member(authorID)
 
+    if message.content.find("!day") != -1:
+        await day()
+
+    elif message.content.find("!night") != -1:
+        await night()
+
     if gameInProgress == False and readyCount <= requiredPlayerNum:
 
         if message.content.find("!ready") != -1:
             if(authorID not in playersDict):
                 readyCount += 1
-                playersDict[authorID] = member
+                playersDict[readyCount] = member
 
             # await message.channel.send("Hi " + str(member) + " " + str(authorID)) # If the user says !hello we will send back hi
             await message.channel.send(
@@ -218,7 +251,7 @@ async def on_message(message):
             gameInProgress = True
 
             for key in playersDict.keys():
-                playersList.append(Player(playersDict[key]))
+                playersList.append(Player(playersDict[key], key))
             await message.channel.send("Game started")
             await startGame()
 
@@ -279,6 +312,7 @@ async def on_message(message):
 
     if message.content.find("*mute") != -1:
         await member.edit(mute=True)
+        await member.edit(nick=None)
 
     if message.content.find("*unmute") != -1:
         await member.edit(mute=False)
