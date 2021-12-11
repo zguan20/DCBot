@@ -5,7 +5,40 @@ from discord.ext import commands
 
 import main
 
-player = 0
+
+
+import time
+
+
+def countdown(num_of_secs):
+    while num_of_secs:
+        m, s = divmod(num_of_secs, 60)
+        min_sec_format = '{:02d}:{:02d}'.format(m, s)
+        print(min_sec_format)
+        time.sleep(1)
+        num_of_secs -= 1
+
+    print('Countdown finished.')
+
+
+# countdown(10)
+
+async def unmute(UserId):
+  serverID = 918987327131492382
+  theServer = client.get_guild(serverID)
+  user = await theServer.fetch_member(UserId)
+  channel = client.get_channel(919306850493677578)
+  print(channel.name)
+  await user.edit(mute=False)
+
+
+async def mute(UserId):
+  serverID = 918987327131492382
+  theServer = client.get_guild(serverID)
+  user = await theServer.fetch_member(UserId)
+  channel = client.get_channel(919306850493677578)
+  print(channel.name)
+  await user.edit(mute=True)
 
 client = discord.Client()
 bot = commands.Bot(command_prefix='$')
@@ -24,7 +57,7 @@ async def on_ready():
 async def on_message(message):
   if message.author == client.user:
     return
-  
+
   # await message.channel.send(message.author)
   #responding to a message
   if message.content.startswith("$hello"):
@@ -43,7 +76,7 @@ async def on_message(message):
     await user.add_roles(role)
 
 
-  if message.content.startswith("$id"):
+  if message.content.startswith("!moveto"):
     serverID = 918987327131492382
     theServer = client.get_guild(serverID)
     i = await theServer.fetch_member(209188548941709312)
@@ -60,11 +93,26 @@ async def on_message(message):
     # print(player.name)
     await player.move_to(channel)
 
+  if message.content.startswith("!cid"):
+    for i in client.get_all_channels():
+      print(i)
+      print(i.id)
+
+  if message.content.startswith("!id"):
+    user = message.author
+    print(user.id)
 
 
+  if message.content.startswith("!mute"):
+    await mute(919304404228800552)
 
-
+  if message.content.startswith("!unmute"):
+    await unmute(919304404228800552)
 
 client.run(os.environ['TOKEN'])
+
+
+
+
 
 
