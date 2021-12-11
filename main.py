@@ -11,6 +11,20 @@ client = discord.Client()
 
 import time
 
+def geneOrder():
+    i = random.randint(1, 9)
+    # print(i)
+    list = []
+    for x in range(0, 9):
+        list.append(i)
+        i += 1
+        if i == 10:
+            i = 1
+    return list
+
+
+print(geneOrder())
+
 
 def countdown(num_of_secs):
     while num_of_secs:
@@ -60,7 +74,7 @@ class Player:
         self.skillsFlag = False
         self.vote = -1
 
-requiredPlayerNum = 9
+requiredPlayerNum = 3
 playersList = []
 readyCount = 0
 gameInProgress = False
@@ -103,11 +117,13 @@ async def night():
         else:
             to_channel = client.get_channel(rooms[i])
         await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
+        await playersList[i].member.edit(mute=False)
 
 async def day():
     for i in range(0, len(playersList)):
         to_channel = client.get_channel(919306850493677578)
         await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
+        await playersList[i].member.edit(mute=True)
 
 async def startGame():
 
@@ -128,39 +144,48 @@ async def startGame():
         if playersList[i].number == 1:
             role = discord.utils.get(cur_member.guild.roles, name="一号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="1号")
+            # print(identityList[i])
         if playersList[i].number == 2:
             role = discord.utils.get(cur_member.guild.roles, name="二号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="2号")
+            # print(identityList[i])
         if playersList[i].number == 3:
             role = discord.utils.get(cur_member.guild.roles, name="三号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="3号")
+            # print(identityList[i])
         if playersList[i].number == 4:
             role = discord.utils.get(cur_member.guild.roles, name="四号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="4号")
+            # print(identityList[i])
         if playersList[i].number == 5:
             role = discord.utils.get(cur_member.guild.roles, name="五号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="5号")
+            # print(identityList[i])
         if playersList[i].number == 6:
             role = discord.utils.get(cur_member.guild.roles, name="六号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="6号")
+            # print(identityList[i])
         if playersList[i].number == 7:
             role = discord.utils.get(cur_member.guild.roles, name="七号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="7号")
+            # print(identityList[i])
         if playersList[i].number == 8:
             role = discord.utils.get(cur_member.guild.roles, name="八号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="8号")
+            # print(identityList[i])
         if playersList[i].number == 9:
             role = discord.utils.get(cur_member.guild.roles, name="九号")
             await cur_member.add_roles(role)
-            print(identityList[i])
+            await playersList[i].member.edit(nick="9号")
+            # print(identityList[i])
 
         idToChannels[civilianCounter] = rooms[i]
         to_channel = client.get_channel(rooms[i])
@@ -235,9 +260,15 @@ async def on_message(message):
 
     if message.content.find("!day") != -1:
         await day()
+        for i in range(0,3):
+            await playersList[i].member.edit(mute=False)
+            countdown(5)
+            await playersList[i].member.edit(mute=True)
 
-    elif message.content.find("!night") != -1:
         await night()
+
+    # elif message.content.find("!night") != -1:
+    #     await night()
 
     if gameInProgress == False and readyCount <= requiredPlayerNum:
 
