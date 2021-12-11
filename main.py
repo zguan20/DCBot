@@ -1,7 +1,20 @@
 import os
+import random
 import discord
+from discord.ext import commands
+
+import main
+
+player = 0
 
 client = discord.Client()
+bot = commands.Bot(command_prefix='$')
+aa = [1,2,3,4,5,6]
+
+random.shuffle(aa)
+
+print(aa)
+
 
 @client.event
 async def on_ready():
@@ -15,7 +28,8 @@ async def on_message(message):
   # await message.channel.send(message.author)
   #responding to a message
   if message.content.startswith("$hello"):
-    await message.channel.send("Hello {}".format(message.author.name))
+    main.player = message.author
+    await message.channel.send("Hello {}".format(message.author.id))
 
   #creating a channel
   if message.content.startswith("$cc"):
@@ -29,4 +43,28 @@ async def on_message(message):
     await user.add_roles(role)
 
 
-client.run(os.getenv('TOKEN'))
+  if message.content.startswith("$id"):
+    serverID = 918987327131492382
+    theServer = client.get_guild(serverID)
+    i = await theServer.fetch_member(209188548941709312)
+    channel = client.get_channel(919017619779096576)
+    await i.move_to(channel)
+    print(i)
+    print(i.id)
+
+  if message.content.startswith("$move"):
+    channel = client.get_channel(919017619779096576)
+    print(channel)
+    # user = discord.utils.get(bot.get_all_members(), id=209188548941709312)
+    # print(user)
+    # print(player.name)
+    await player.move_to(channel)
+
+
+
+
+
+
+client.run(os.environ['TOKEN'])
+
+
