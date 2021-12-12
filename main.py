@@ -111,7 +111,8 @@ def countdown(t):
 
 async def night():
     global stage
-    stage = stage.night
+
+    stage = stage.prophet_check
     civilianCounter = 1
     for i in range(0, len(playersList)):
         playersList[i].identity = identityList[i]  # assign id to player
@@ -273,6 +274,9 @@ async def on_ready():
 @client.event
 async def on_message(message):
 
+    if message.author == client.user:
+        return
+
     theServer = client.get_guild(serverID)
     global sendToDict
     global gameInProgress
@@ -307,7 +311,7 @@ async def on_message(message):
          #stage = stage.night
         stage = stage.day
 
-    if gameInProgress == False and readyCount <= requiredPlayerNum:
+    if readyCount <= requiredPlayerNum:
 
         if message.content.find("!ready") != -1:
             if(authorID not in playersDict):
@@ -318,6 +322,11 @@ async def on_message(message):
             await message.channel.send(
                 str(member) + " is ready. Need " + str(requiredPlayerNum - readyCount) + " more players to start")
 
+
+        if message.content.find("!boom") != -1 and stage is stage.day:
+            print("自爆")
+            dayflag = True
+            await night()
 
 
         if message.content.find("!unready") != -1:
@@ -338,7 +347,8 @@ async def on_message(message):
             stage = stage.prophet_check
 
 
-        if(stage is stage.prophet_check):
+        if stage is stage.prophet_check:
+            dayflag = False
             t = 5
             msgsList = []
             for p in playersList:
@@ -368,19 +378,12 @@ async def on_message(message):
                         await eachMsg.delete()
                 stage = stage.day
 
-                #await send(content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None, allowed_mentions=None, reference=None, mention_author=None)
-                #https://discordpy.readthedocs.io/en/latest/api.html?highlight=send#discord.TextChannel.send
-                #await message.channel.send("剩余时间:" + str(t), delete_after=10)
-                #print(t)
-                #await message.channel.send(str(t))
-
-            #stage = stage.day
         if stage is stage.day:
             tt = 30
 
             for i in range(0, len(playersList)):
                 to_channel = client.get_channel(919306850493677578)
-                if (playersList[i].survivalStatus is True):
+                if playersList[i].survivalStatus is True:
                     await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
                     await playersList[i].member.edit(mute=True)
             for j in range(0, requiredPlayerNum):
@@ -426,10 +429,6 @@ async def on_message(message):
     if message.content.find("!hello") != -1:
         await message.channel.send("hi")
 
-    if message.content.find("!boom") != -1 and stage is stage.day:
-        print("自爆")
-        dayflag = True
-        await night()
 
     if message.content.find("!move") != -1:
         authorID = message.author.id
