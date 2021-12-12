@@ -357,7 +357,7 @@ async def on_message(message):
 
     if message.content.find("!countvote") != -1:
         voter_lst = []
-        dict = {
+        votes = {
             1: [],
             2: [],
             3: [],
@@ -371,8 +371,9 @@ async def on_message(message):
         announc_channal = client.get_channel(919369647109836830)
         for player in playersList:
             if player.survivalStatus is True:
-                dict[player.vote].append(player.number)
-        print(dict)
+                votes[player.vote].append(player.number)
+        for key in votes.keys():
+            await announc_channal.send("{} : {}".format(key, votes[key]))
 
 
 
