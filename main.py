@@ -50,12 +50,14 @@ class stage(enum.Enum):
 idToChannels = {"groupChannel" : 919306850493677578,
                 id.wolf : 919306750929305630}
 
-idToRoles = {}
 
 rooms = [919017619779096576, 919305506730954782, 919306040938487808,
          919306205212586065, 919306317376667650, 919306397118791690,
          919306467167858799, 919306605894455327, 919306683363229736]
 
+textRooms = [919351644074946560, 919351790447755274, 919351993980563477,
+             919351993980563477, 919352093469450250, 919363312007921724,
+             919363378009497730, 919363475120222281, 919363753491980308]
 
 playersDict = {}
 
@@ -125,6 +127,20 @@ async def day():
         if(playersList[i].survivalStatus is True):
             await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
             await playersList[i].member.edit(mute=True)
+
+async  def notify():
+    if stage is stage.prophet_check:
+        for p in playersList:
+            if p.identity is id.prophet:
+                textChannel = client.get_channel(textRooms[p.number - 1])
+                await textChannel.send(
+                    "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验\n请确保关闭输入法。",
+                    tts=True)
+            else:
+                textChannel = client.get_channel(textRooms[p.number - 1])
+                await textChannel.send(
+                    "预言家正在进行查验",
+                    tts=True)
 
 async def startGame():
 
@@ -252,6 +268,7 @@ async def on_ready():
 async def on_message(message):
 
     theServer = client.get_guild(serverID)
+    global sendToDict
     global gameInProgress
     global readyCount
     global playersList
@@ -306,15 +323,30 @@ async def on_message(message):
 
         if(stage is stage.prophet_check):
             t = 30
+            msgsList = []
+            for p in playersList:
+                if p.identity is id.prophet:
+                    textChannel = client.get_channel(textRooms[p.number - 1])
+                    await textChannel.send(
+                        "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验。\n例如: !check 1 代表你要查验1号玩家的身份。 请确保关闭输入法。",
+                        tts=True)
+                    msgsList.append( await textChannel.send("剩余时间: " + str(t)) )
+                else:
+                    textChannel = client.get_channel(textRooms[p.number - 1])
+                    await textChannel.send(
+                        "预言家正在进行查验",
+                        tts=True)
+                    msgsList.append( await textChannel.send("剩余时间: " + str(t)) )
 
-            await message.channel.send("预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验，例如: !check 1 代表你要查验1号玩家的身份 请确保关闭输入法.")
-            theMsg = await message.channel.send("剩余时间: " + str(t))
+
+
             while t > 0:
                 #if (t % 10 == 0 and t > 10) or (t <= 5):
                 time.sleep(1)
                 t -= 1
-                await theMsg.edit(content="剩余时间: " + str(t))
-
+                #await theMsg.edit(content="剩余时间: " + str(t))
+                for eachMsg in msgsList:
+                    await eachMsg.edit(content="剩余时间: " + str(t))
 
                 #await send(content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None, allowed_mentions=None, reference=None, mention_author=None)
                 #https://discordpy.readthedocs.io/en/latest/api.html?highlight=send#discord.TextChannel.send
@@ -336,12 +368,13 @@ async def on_message(message):
         print(66666666)
         msg = message.content
         arg_list = msg.split(" ")
-        targetNum = int(arg_list[1])
-        for player in playersList:
-            if player.member == message.author:
-                if player.survivalStatus is True:  # and player.identity == id.prophet
-                    await message.channel.send(
-                        "Player " + str(targetNum) + "s identity is: " + str(playersList[targetNum - 1].identity))
+        if(len(arg_list) > 1):
+            targetNum = int(arg_list[1])
+            for player in playersList:
+                if player.member == message.author:
+                    if player.survivalStatus is True:  # and player.identity == id.prophet
+                        await message.channel.send(
+                            "Player " + str(targetNum) + "s identity is: " + str(playersList[targetNum - 1].identity))
 
     if message.content.find("!hello") != -1:
         authorID = message.author.id
