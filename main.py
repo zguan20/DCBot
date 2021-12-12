@@ -74,7 +74,7 @@ class Player:
         self.skillsFlag = False
         self.vote = -1
 
-requiredPlayerNum = 3
+requiredPlayerNum = 1
 playersList = []
 readyCount = 0
 gameInProgress = False
@@ -235,8 +235,9 @@ async def on_ready():
     print(theServer.roles)
 
     print("---")
-    for i in client.get_all_members():
+    for i in client.get_all_channels():
         print(i)
+        print(i.id)
 
     #print("countdown:")
     # input time in seconds
@@ -260,7 +261,7 @@ async def on_message(message):
 
     if message.content.find("!day") != -1:
         await day()
-        for i in range(0,3):
+        for i in range(0, 1):
             await playersList[i].member.edit(mute=False)
             countdown(5)
             await playersList[i].member.edit(mute=True)
@@ -342,6 +343,17 @@ async def on_message(message):
             print(newChannel)
             channelsDict[arg_list[i]] = newChannel.id
 
+    if message.content.find("!vote") != -1:
+        msg = message.content
+        arg_list = msg.split(" ")
+        announc_channal = client.get_channel(919369647109836830)
+
+        for player in playersList:
+            target = playersList[int(arg_list[1]) - 1]
+            if player.member == message.author:
+                if player.survivalStatus is True and target.survivalStatus is True:
+                    player.vote = target.number
+                    await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
 
 
     if message.content.find("!del") != -1:
