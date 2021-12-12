@@ -306,11 +306,21 @@ async def on_message(message):
 
         if(stage is stage.prophet_check):
             t = 30
-            while t:
+
+            await message.channel.send("预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验，例如: !check 1 代表你要查验1号玩家的身份 请确保关闭输入法.")
+            theMsg = await message.channel.send("剩余时间: " + str(t))
+            while t > 0:
+                #if (t % 10 == 0 and t > 10) or (t <= 5):
                 time.sleep(1)
                 t -= 1
-                print(t)
-                await message.channel.send(str(t))
+                await theMsg.edit(content="剩余时间: " + str(t))
+
+
+                #await send(content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None, allowed_mentions=None, reference=None, mention_author=None)
+                #https://discordpy.readthedocs.io/en/latest/api.html?highlight=send#discord.TextChannel.send
+                #await message.channel.send("剩余时间:" + str(t), delete_after=10)
+                #print(t)
+                #await message.channel.send(str(t))
 
 
     if message.author.id in playersDict:
