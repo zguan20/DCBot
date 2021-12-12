@@ -74,7 +74,7 @@ class Player:
         self.skillsFlag = False
         self.vote = -1
 
-requiredPlayerNum = 3
+requiredPlayerNum = 2
 playersList = []
 readyCount = 0
 gameInProgress = False
@@ -356,7 +356,6 @@ async def on_message(message):
                     await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
 
     if message.content.find("!countvote") != -1:
-        voter_lst = []
         votes = {
             1: [],
             2: [],
@@ -369,11 +368,33 @@ async def on_message(message):
             9: []
         }
         announc_channal = client.get_channel(919369647109836830)
+
+        eliminator = 1
+        flatVoteList = []
         for player in playersList:
             if player.survivalStatus is True:
                 votes[player.vote].append(player.number)
         for key in votes.keys():
-            await announc_channal.send("{} : {}".format(key, votes[key]))
+            if len(votes[key]) != 0:
+                await announc_channal.send("{} : {}".format(key, votes[key]))
+
+        for candidate, votersList in votes.items():
+            if(len(votersList) == len(votes[eliminator])):
+                if(eliminator not in flatVoteList):
+                    flatVoteList.append(eliminator)
+                if(candidate not in flatVoteList):
+                    flatVoteList.append(candidate)
+
+            elif(len(votersList) > len(votes[eliminator])):
+                eliminator = candidate
+                flatVoteList.clear()
+
+        if(len(flatVoteList) > 1):
+
+            await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+        else:
+            await announc_channal.send(str(eliminator) + " is out")
+
 
 
 
@@ -397,9 +418,3 @@ async def on_message(message):
 
 
 client.run(os.environ["TOKEN"])
-
-
-
-
-
-
