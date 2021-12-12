@@ -74,7 +74,7 @@ class Player:
         self.skillsFlag = False
         self.vote = -1
 
-requiredPlayerNum = 1
+requiredPlayerNum = 3
 playersList = []
 readyCount = 0
 gameInProgress = False
@@ -354,6 +354,27 @@ async def on_message(message):
                 if player.survivalStatus is True and target.survivalStatus is True:
                     player.vote = target.number
                     await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
+
+    if message.content.find("!countvote") != -1:
+        voter_lst = []
+        dict = {
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [],
+            9: []
+        }
+        announc_channal = client.get_channel(919369647109836830)
+        for player in playersList:
+            if player.survivalStatus is True:
+                dict[player.vote].append(player.number)
+        print(dict)
+
+
 
 
     if message.content.find("!del") != -1:
