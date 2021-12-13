@@ -4,8 +4,10 @@ import random
 import time
 import enum
 
+import main
 
 client = discord.Client()
+
 
 
 def geneOrder():
@@ -31,8 +33,8 @@ class id(enum.Enum):
 
 class skills(enum.Enum):
     prophet_check = 1
-    wolf_vote = 2
-    witch_poision = 3
+    wolf_kill = 2
+    witch_poison = 3
     witch_save = 4
     hunter_shoot = 7
     wolf_boom = 8
@@ -40,9 +42,8 @@ class skills(enum.Enum):
 
 class stage(enum.Enum):
     prophet_check = 1
-    wolf_vote = 2
-    witch_poision = 3
-    witch_save = 4
+    wolf_kill = 2
+    女巫阶段 = 4
     day = 5
     night = 6
     hunter_shoot = 7
@@ -70,10 +71,12 @@ class Player:
         self.number = number
         self.member = member
         self.identity = None
-        self.survivalStatus = True
-        self.skills = skills.none
+        self.survivalStatus = 2 #0真死 1还能救 2存活
+        self.skills = []
         self.skillsFlag = False
         self.vote = -1
+
+
 
 daysCount = 1
 stage = stage.none
@@ -111,17 +114,18 @@ def countdown(t):
 
 async def night():
     global stage
-    stage = stage.night
+
+    stage = stage.prophet_check
     civilianCounter = 1
     for i in range(0, len(playersList)):
-        playersList[i].identity = identityList[i]  # assign id to player
+        #playersList[i].identity = identityList[i]  # assign id to player
 
         #move players to their rooms
         if identityList[i] == id.wolf:
             to_channel = client.get_channel(919306750929305630)
         else:
             to_channel = client.get_channel(rooms[i])
-        if(playersList[i].survivalStatus is True):
+        if(playersList[i].survivalStatus == 2):
             await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
             await playersList[i].member.edit(mute=False)
 
@@ -130,7 +134,7 @@ async def day():
     stage = stage.day
     for i in range(0, len(playersList)):
         to_channel = client.get_channel(919306850493677578)
-        if(playersList[i].survivalStatus is True):
+        if(playersList[i].survivalStatus == 1 or playersList[i].survivalStatus == 2):
             await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
             await playersList[i].member.edit(mute=True)
 
@@ -140,14 +144,12 @@ async  def notify():
             if p.identity is id.prophet:
                 textChannel = client.get_channel(textRooms[p.number - 1])
                 await textChannel.send(
-                    "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验\n请确保关闭输入法。",
-                    tts=True)
+                    "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验\n请确保关闭输入法。")
             else:
                 textChannel = client.get_channel(textRooms[p.number - 1])
                 await textChannel.send(
-                    "预言家正在进行查验",
-                    tts=True)
-
+                    "预言家正在进行查验")
+theWitch = Player(None, -1)
 async def startGame():
 
     global rooms
@@ -159,10 +161,14 @@ async def startGame():
 
     civilianCounter = 1
     for i in range(0, len(playersList)):
-        playersList[i].identity = identityList[i] #assign id to player
+        playersList[i].identity = id.witch#identityList[i] #assign id to player
+        playersList[i].survivalStatus = 1
+        playersList[i].skills = [skills.witch_save, skills.witch_poison]
         cur_member = playersList[i].member
         print(cur_member.name)
         # print(playersList[i].number)
+
+        main.theWitch = playersList[i]
 
         if playersList[i].number == 1:
             role = discord.utils.get(cur_member.guild.roles, name="一号")
@@ -213,31 +219,20 @@ async def startGame():
         idToChannels[civilianCounter] = rooms[i]
         to_channel = client.get_channel(rooms[i])
 
-        if identityList[i] == id.wolf:
-            to_channel = client.get_channel(919306750929305630)
+        # if identityList[i] == id.wolf:
+        #     to_channel = client.get_channel(919306750929305630)
 
-        # if(identityList[i] != id.wolf): #already defined a room for wolf.
-        #     if (identityList[i] != id.civilian):
-        #         idToChannels[identityList[i]] = rooms[i]
-        #         to_channel = client.get_channel(rooms[i])
-        #     else:
-        #         idToChannels[civilianCounter] = rooms[i]
-        #         to_channel = client.get_channel(rooms[i])
-
-        if identityList[i] == id.wolf:
-            pass
-
-        elif identityList[i] == id.prophet:
-            pass
-
-        elif identityList[i] == id.witch:
-            pass
-
-        elif identityList[i] == id.hunter:
-            pass
-
-        else: #civilian
-            pass
+        # if identityList[i] == id.wolf:
+        #     playersList[i].skills = [skills.wolf_kill]
+        #
+        # elif identityList[i] == id.prophet:
+        #     playersList[i].skills = [skills.prophet_check]
+        #
+        # elif identityList[i] == id.witch:
+        #     playersList[i].skills = [skills.witch_save, skills.witch_poison]
+        #
+        # elif identityList[i] == id.hunter:
+        #     playersList[i].skills = [skills.hunter_shoot]
 
         await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
 
@@ -262,16 +257,12 @@ async def on_ready():
         print(i)
         print(i.id)
 
-    #print("countdown:")
-    # input time in seconds
-    #t = input("Enter the time in seconds: ")
-
-    # function call
-    #countdown(int(t))
-
 
 @client.event
 async def on_message(message):
+
+    if message.author == client.user:
+        return
 
     theServer = client.get_guild(serverID)
     global sendToDict
@@ -281,31 +272,19 @@ async def on_message(message):
     global playersDict
     global requiredPlayerNum
     global stage
+    global dayflag
+    global daysCount
+    global witchFlag
+    theWitch = main.theWitch
+    witchFlag = False
+    dayflag = False
     authorID = message.author.id
     member = await theServer.fetch_member(authorID)
 
     if message.content.find("!day") != -1:
-        # await day()
-        # stage = stage.day
-        # for i in range(0, requiredPlayerNum):
-        #     await playersList[i].member.edit(mute=False)
-        #     t = 20
-        #     while t > 0:
-        #         print(t)
-        #         if(message.content.find("!boom")):
-        #             print("in boom 1")
-        #         time.sleep(1)
-        #         t -= 1
-        #     await playersList[i].member.edit(mute=True)
-        #
-        # await night()
-
-     #elif message.content.find("!night") != -1:
-         #await night()
-         #stage = stage.night
         stage = stage.day
 
-    if gameInProgress == False and readyCount <= requiredPlayerNum:
+    if readyCount <= requiredPlayerNum:
 
         if message.content.find("!ready") != -1:
             if(authorID not in playersDict):
@@ -316,6 +295,83 @@ async def on_message(message):
             await message.channel.send(
                 str(member) + " is ready. Need " + str(requiredPlayerNum - readyCount) + " more players to start")
 
+
+        if message.content.find("!boom") != -1 and stage is stage.day:
+            print("自爆")
+            dayflag = True
+            await night()
+
+        if message.content.find("!save") != -1 and stage is stage.女巫阶段:
+            witchFlag = True
+            msg = message.content
+            arg_list = msg.split(" ")
+
+            if len(arg_list) < 2:
+                textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                await textChannel.send("请输入!save playerNumber")
+                return
+
+            target = playersList[int(arg_list[1]) - 1]
+            print(theWitch.skills)
+            if theWitch.skillsFlag is False:
+
+                if skills.witch_save in theWitch.skills:
+
+
+                    if target.survivalStatus == 1 and target.number is theWitch.number and daysCount > 1:
+                        textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                        await textChannel.send("你无法对自己使用解药")
+                        return
+
+                    if target.survivalStatus == 1:
+                        target.survivalStatus = 2
+                        theWitch.skills.remove(skills.witch_save)
+                        textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                        await textChannel.send("你对玩家" + str(target.number) + "使用了解药")
+                        theWitch.skillsFlag = True
+                        print(theWitch.skills)
+                    else:
+                        return
+
+                else:
+                    textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                    await textChannel.send("你的解药已经没了")
+            else:
+                textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                await textChannel.send("本回合你已经用过毒药")
+
+        if message.content.find("!poison") != -1 and stage is stage.女巫阶段:
+            witchFlag = True
+            msg = message.content
+            arg_list = msg.split(" ")
+
+            if len(arg_list) < 2:
+                textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                await textChannel.send("请输入!poison playerNumber")
+                return
+
+            target = playersList[int(arg_list[1]) - 1]
+            print(theWitch.skills)
+            if theWitch.skillsFlag is False:
+
+                if skills.witch_poison in theWitch.skills:
+
+                    if target.survivalStatus == 1 or target.survivalStatus == 2:
+                        target.survivalStatus = 0
+                        theWitch.skills.remove(skills.witch_poison)
+                        textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                        await textChannel.send("你对玩家" + str(target.number) + "使用了毒药")
+                        print(theWitch.skills)
+                        theWitch.skillsFlag = True
+                    else:
+                        return
+
+                else:
+                    textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                    await textChannel.send("你的毒药已经没了")
+            else:
+                textChannel = client.get_channel(textRooms[theWitch.number - 1])
+                await textChannel.send("本回合你已经用过解药")
 
 
         if message.content.find("!unready") != -1:
@@ -336,21 +392,23 @@ async def on_message(message):
             stage = stage.prophet_check
 
 
-        if(stage is stage.prophet_check):
-            t = 20
+        if stage is stage.prophet_check:
+            dayflag = False
+            witchFlag = False
+            t = 5
             msgsList = []
             for p in playersList:
                 if p.identity is id.prophet:
                     textChannel = client.get_channel(textRooms[p.number - 1])
                     await textChannel.send(
                         "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验。\n例如: !check 1 代表你要查验1号玩家的身份。 请确保关闭输入法。",
-                        tts=True, delete_after=32)
+                        tts=False, delete_after=32)
                     msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=32) )
                 else:
                     textChannel = client.get_channel(textRooms[p.number - 1])
                     await textChannel.send(
                         "预言家正在进行查验",
-                        tts=True, delete_after=32)
+                        tts=False, delete_after=32)
                     msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=32) )
 
 
@@ -363,54 +421,82 @@ async def on_message(message):
                 for eachMsg in msgsList:
                     await eachMsg.edit(content="剩余时间: " + str(t))
                     if(t == 0):
-                        eachMsg.delete()
+                        await eachMsg.delete()
+                stage = stage.女巫阶段
 
-                #await send(content=None, *, tts=False, embed=None, file=None, files=None, delete_after=None, nonce=None, allowed_mentions=None, reference=None, mention_author=None)
-                #https://discordpy.readthedocs.io/en/latest/api.html?highlight=send#discord.TextChannel.send
-                #await message.channel.send("剩余时间:" + str(t), delete_after=10)
-                #print(t)
-                #await message.channel.send(str(t))
+        if stage is stage.女巫阶段 and witchFlag is False:
+            t = 30
+            witchFlag = True
 
-            #stage = stage.day
+            msgsList = []
+            dyingPlayer = -1
+            for p in playersList:
+                if p.survivalStatus == 1:
+                    dyingPlayer = p.number
+                if p.identity is id.witch:
+                    theWitch = p
+                    textChannel = client.get_channel(textRooms[p.number - 1])
+                    await textChannel.send(
+                        "女巫请睁眼，昨晚玩家"+ str(dyingPlayer) +"死了，你有一瓶解药，要救吗？如果要救，请输入!save playerNumber" +
+                        "\n你有一瓶毒药，要用吗？毒谁？ 如果要毒，请输入!poison playerNumber" +
+                        "\n你只能做出一个选择",
+                        tts=False, delete_after=32)
+                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=32) )
+                else:
+                    textChannel = client.get_channel(textRooms[p.number - 1])
+                    await textChannel.send(
+                        "女巫睁眼阶段",
+                        tts=False, delete_after=32)
+                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=32) )
+
+            while t > 0:
+                time.sleep(1)
+                t -= 1
+
+                for eachMsg in msgsList:
+                    await eachMsg.edit(content="剩余时间: " + str(t))
+                    if(t == 0):
+                        await eachMsg.delete()
+
+            stage = stage.day
 
 
-    if message.author.id in playersDict:
-        if message.content.find("!day") != -1:
-            await day()
 
-        elif message.content.find("!night") != -1:
-            await night()
+        if stage is stage.day:
+            tt = 30
 
-        #if message.content.find("!reset_game") != -1:
+            for i in range(0, len(playersList)):
+                to_channel = client.get_channel(919306850493677578)
+                if playersList[i].survivalStatus == 2:
+                    await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
+                    await playersList[i].member.edit(mute=True)
+            for j in range(0, requiredPlayerNum):
+                while tt > 0:
+                    # if (t % 10 == 0 and t > 10) or (t <= 5):
+                    await playersList[j].member.edit(mute=False)
+                    time.sleep(1)
+                    tt -= 1
+                    if dayflag is True:
+                        print("break")
+                        break
+                    print(tt)
+                    if tt == 1:
+                        await playersList[j].member.edit(mute=True)
+
 
     if message.content.find("!check") != -1 and stage is stage.prophet_check:
         print(66666666)
         msg = message.content
         arg_list = msg.split(" ")
-        if(len(arg_list) > 1):
+        if len(arg_list) > 1:
             targetNum = int(arg_list[1])
             for player in playersList:
                 if player.member == message.author:
-                    if player.survivalStatus is True:  # and player.identity == id.prophet
+                    if player.survivalStatus == 2:  # and player.identity == id.prophet
                         await message.channel.send(
                             "Player " + str(targetNum) + "s identity is: " + str(playersList[targetNum - 1].identity))
 
-    if stage is stage.day:
-        await day()
-        stage = stage.day
-        for i in range(0, requiredPlayerNum):
-            await playersList[i].member.edit(mute=False)
-            t = 20
-            while t > 0:
-                print(t)
-                if(message.content.find("!boom")):
-                    print("in boom 1.")
-                    break
-                time.sleep(1)
-                t -= 1
-            await playersList[i].member.edit(mute=True)
 
-        await night()
 
     #if message.content.find("!boom") != -1 and stage is stage.day:
         #print("in boom 2.")
@@ -444,7 +530,7 @@ async def on_message(message):
         for player in playersList:
             target = playersList[int(arg_list[1]) - 1]
             if player.member == message.author:
-                if player.survivalStatus is True and target.survivalStatus is True:
+                if player.survivalStatus == 2 and target.survivalStatus == 2:
                     player.vote = target.number
                     await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
 
@@ -465,7 +551,7 @@ async def on_message(message):
         eliminator = 1
         flatVoteList = []
         for player in playersList:
-            if player.survivalStatus is True:
+            if player.survivalStatus == 2:
                 votes[player.vote].append(player.number)
         for key in votes.keys():
             if len(votes[key]) != 0:
@@ -488,7 +574,7 @@ async def on_message(message):
             await announc_channal.send(str(eliminator) + " is out")
 
             i = eliminator - 1
-            playersList[i].survivalStatus = False
+            playersList[i].survivalStatus = 0
             await playersList[i].member.edit(mute=True)
             cur_member = playersList[i].member
 
