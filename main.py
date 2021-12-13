@@ -473,6 +473,8 @@ async def on_message(message):
                     break
 
 
+
+
         if message.content.find("!start") != -1 and readyCount >= requiredPlayerNum:
             gameInProgress = True
 
@@ -485,244 +487,237 @@ async def on_message(message):
             stage = stage.prophet_check
             stageLock = False
 
+            while stageLock is not True:
+                if stage is stage.prophet_check and stageLock is False:
+                    stageLock = True
+                    dayflag = False
+                    playersDict["女巫"].skillsFlag = False
+                    t = 5
+                    msgsList = []
+                    for p in playersList:
+                        if p.identity is id.prophet:
+                            textChannel = client.get_channel(textRooms[p.number - 1])
+                            await textChannel.send(
+                                "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验。\n例如: !check 1 代表你要查验1号玩家的身份。 请确保关闭输入法。",
+                                tts=False, delete_after=40)
+                            await textChannel.send("预言家阶段： 存活玩家 {}".format(getSurvivals()), delete_after=40)
+                            msgsList.append(await textChannel.send("剩余时间: " + str(t), delete_after=40))
+                        else:
+                            textChannel = client.get_channel(textRooms[p.number - 1])
+                            await textChannel.send(
+                                "预言家正在进行查验",
+                                tts=False, delete_after=40)
+                            msgsList.append(await textChannel.send("剩余时间: " + str(t), delete_after=40))
 
-        if stage is stage.prophet_check and stageLock is False:
-            stageLock = True
-            dayflag = False
-            playersDict["女巫"].skillsFlag = False
-            t = 5
-            msgsList = []
-            for p in playersList:
-                if p.identity is id.prophet:
-                    textChannel = client.get_channel(textRooms[p.number - 1])
-                    await textChannel.send(
-                        "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验。\n例如: !check 1 代表你要查验1号玩家的身份。 请确保关闭输入法。",
-                        tts=False, delete_after=40)
-                    await textChannel.send("预言家阶段： 存活玩家 {}".format(getSurvivals()), delete_after=40)
-                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=40) )
-                else:
-                    textChannel = client.get_channel(textRooms[p.number - 1])
-                    await textChannel.send(
-                        "预言家正在进行查验",
-                        tts=False, delete_after=40)
-                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=40) )
+                    while t > 0:
+                        # if (t % 10 == 0 and t > 10) or (t <= 5):
+                        time.sleep(1)
+                        t -= 1
+                        # await theMsg.edit(content="剩余时间: " + str(t))
+                        for eachMsg in msgsList:
+                            await eachMsg.edit(content="剩余时间: " + str(t))
+                            if (t == 0):
+                                await eachMsg.delete()
+                    stage = stage.wolf_kill
+                    stageLock = False
+
+                if stage is stage.wolf_kill and stageLock is False:
+                    stageLock = True
+                    t = 10
+
+                    msgsList = []
+                    for p in playersList:
+                        if p.identity is id.wolf:
+                            textChannel = client.get_channel(textRooms[p.number - 1])
+                            await textChannel.send(
+                                "狼人请杀人 输入指令!kill playerNumber",
+                                tts=False, delete_after=40)
+                            await textChannel.send("存活玩家 {}".format(getSurvivals()), delete_after=40)
+                            msgsList.append(await textChannel.send("剩余时间: " + str(t), delete_after=40))
+                        else:
+                            textChannel = client.get_channel(textRooms[p.number - 1])
+                            await textChannel.send(
+                                "狼人在杀人...",
+                                tts=False, delete_after=40)
+                            msgsList.append(await textChannel.send("剩余时间: " + str(t), delete_after=40))
+
+                    while t > 0:
+                        # if (t % 10 == 0 and t > 10) or (t <= 5):
+                        time.sleep(1)
+                        t -= 1
+                        # await theMsg.edit(content="剩余时间: " + str(t))
+                        for eachMsg in msgsList:
+                            await eachMsg.edit(content="剩余时间: " + str(t))
+
+                    w1 = playersDict["狼人1"]
+                    # w2 = playersDict["狼人2"]
+                    # w3 = playersDict["狼人3"]
+                    t1 = client.get_channel(textRooms[w1.number - 1])
+                    # t2 = client.get_channel(textRooms[w2.number - 1])
+                    # t3 = client.get_channel(textRooms[w3.number - 1])
+
+                    votes = {
+                        1: [],
+                        2: [],
+                        3: [],
+                        4: [],
+                        5: [],
+                        6: [],
+                        7: [],
+                        8: [],
+                        9: []
+                    }
+
+                    eliminator = 1
+                    flatVoteList = []
+                    for player in playersList:
+                        if player.out is False and player.identity == id.wolf and player.vote != -1:
+                            votes[player.vote].append(player.number)
+
+                    for candidate, votersList in votes.items():
+                        if (len(votersList) == len(votes[eliminator])):
+                            if (eliminator not in flatVoteList):
+                                flatVoteList.append(eliminator)
+                            if (candidate not in flatVoteList):
+                                flatVoteList.append(candidate)
+
+                        elif (len(votersList) > len(votes[eliminator])):
+                            eliminator = candidate
+                            flatVoteList.clear()
+
+                    if (len(flatVoteList) > 1):
+                        await t1.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+                        # await t2.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+                        # await t3.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+                    else:
+                        await t1.send(str(eliminator) + " 号玩家已被刺杀")
+                        # await t2.send(str(eliminator) + " 号玩家已被刺杀")
+                        # await t3.send(str(eliminator) + " 号玩家已被刺杀")
+                        playersList[eliminator - 1].survivalStatus = 1
+
+                    print(eliminator)
+
+                    stage = stage.女巫阶段
+                    #stage = stage.prophet_check
+                    stageLock = False
+
+                    if stage is stage.女巫阶段 and stageLock is False:
+                        stageLock = True
+                        t = 10
+                        msgsList = []
+                        dyingPlayer = -100
+                        for p in playersList:
+                            if p.survivalStatus == 1:
+                                dyingPlayer = p.number
+
+                        for p in playersList:
+                            if p.identity is id.witch:
+                                # playersDict["女巫"] = p
+                                textChannel = client.get_channel(textRooms[p.number - 1])
+                                await textChannel.send(
+                                    "女巫请睁眼，昨晚玩家" + str(dyingPlayer) + "死了，你有一瓶解药，要救吗？如果要救，请输入!save playerNumber" +
+                                    "\n你有一瓶毒药，要用吗？毒谁？ 如果要毒，请输入!poison playerNumber" +
+                                    "\n你只能做出一个选择",
+                                    tts=False, delete_after=40)
+                                await textChannel.send("女巫阶段: 存活玩家 {}".format(getSurvivals()))
+                                msgsList.append(await textChannel.send("剩余时间: " + str(t), delete_after=40))
+                            else:
+                                textChannel = client.get_channel(textRooms[p.number - 1])
+                                await textChannel.send(
+                                    "女巫睁眼阶段",
+                                    tts=False, delete_after=40)
+                                msgsList.append(await textChannel.send("剩余时间: " + str(t), delete_after=40))
+
+                        while t > 0:
+                            time.sleep(1)
+                            t -= 1
+
+                            for eachMsg in msgsList:
+                                await eachMsg.edit(content="剩余时间: " + str(t))
+                                if (t == 0):
+                                    await eachMsg.delete()
+
+                        stage = stage.公布昨晚
+                        stageLock = False
+
+                    if stage is stage.公布昨晚 and stageLock is False:
+                        stageLock = True
+                        # 确认死亡玩家
+                        deadList = []
+                        for p in playersList:
+                            if p.survivalStatus == 1:
+                                p.survivalStatus = 0
+                                deadList.append(p.number)
+
+                        announc_channal = client.get_channel(919369647109836830)
+
+                        if (len(deadList) > 0):
+                            await announc_channal.send("昨晚这些玩家死亡 {}".format(deadList))
+                        else:
+                            await announc_channal.send("昨晚是平安夜")
+                        announc_channal = client.get_channel(919369647109836830)
+                        await announc_channal.send("存活玩家 {}".format(getSurvivals()))
+
+                        # 检测是否有能发动技能的身份
+                        for d in deadList:
+                            if playersList[d - 1].identity == id.hunter:
+                                textChannel = client.get_channel(textRooms[d - 1])
+                                await textChannel.send("玩家 " + str(d) + " 是否发动技能? 请选择射杀对象 !shoot playerNumber")
+
+                        t = 30
+                        await announc_channal.send("等待发动技能...", delete_after=40)
+                        editMsg = await announc_channal.send("公布昨晚结果阶段 剩余时间:" + str(t))
+                        while t > 0:
+                            time.sleep(1)
+                            t -= 1
+                            await editMsg.edit(content="公布昨晚结果阶段 - 剩余时间:" + str(t))
+
+                        # 发表遗言阶段
+                        # if(daysCount == 1):
+
+                        # 确认出局
+                        for d in deadList:
+                            playersList[d - 1].out = True
+
+                        deadList.clear()
+                        stage = stage.day  # 正式发言阶段
+                        stageLock = False
+
+                    if stage is stage.day and stageLock is False:
+                        stageLock = True
+
+                        announc_channal = client.get_channel(919369647109836830)
+                        await announc_channal.send("存活玩家 {}".format(getSurvivals()))
+
+                        for i in range(0, len(playersList)):
+                            to_channel = client.get_channel(919306850493677578)
+                            if playersList[i].survivalStatus == 2:
+                                await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
+                                await playersList[i].member.edit(mute=True)
+
+                        for j in range(0, requiredPlayerNum):
+                            tt = 30
+                            announc_channal = client.get_channel(919369647109836830)
+                            editMsg = await announc_channal.send("正式发言阶段 剩余时间:" + str(t))
+                            while tt > 0:
+                                # if (t % 10 == 0 and t > 10) or (t <= 5):
+                                await playersList[j].member.edit(mute=False)
+                                time.sleep(1)
+                                tt -= 1
+                                editMsg.edit(content="正式发言阶段 剩余时间:" + str(t))
+                                if dayflag is True:
+                                    print("break")
+                                    break
+                                print(tt)
+                                if tt == 1:
+                                    await playersList[j].member.edit(mute=True)
+                        stageLock = False
 
 
 
-            while t > 0:
-                #if (t % 10 == 0 and t > 10) or (t <= 5):
-                time.sleep(1)
-                t -= 1
-                #await theMsg.edit(content="剩余时间: " + str(t))
-                for eachMsg in msgsList:
-                    await eachMsg.edit(content="剩余时间: " + str(t))
-                    if(t == 0):
-                        await eachMsg.delete()
-            stage = stage.wolf_kill
-            stageLock = False
-
-
-        if stage is stage.wolf_kill and stageLock is False:
-            stageLock = True
-            t = 10
-
-            msgsList = []
-            for p in playersList:
-                if p.identity is id.wolf:
-                    textChannel = client.get_channel(textRooms[p.number - 1])
-                    await textChannel.send(
-                        "狼人请杀人 输入指令!kill playerNumber",
-                        tts=False, delete_after=40)
-                    await textChannel.send("存活玩家 {}".format(getSurvivals()), delete_after=40)
-                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=40) )
-                else:
-                    textChannel = client.get_channel(textRooms[p.number - 1])
-                    await textChannel.send(
-                        "狼人在杀人...",
-                        tts=False, delete_after=40)
-                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=40) )
 
 
 
-
-            while t > 0:
-                #if (t % 10 == 0 and t > 10) or (t <= 5):
-                time.sleep(1)
-                t -= 1
-                #await theMsg.edit(content="剩余时间: " + str(t))
-                for eachMsg in msgsList:
-                    await eachMsg.edit(content="剩余时间: " + str(t))
-
-            w1 = playersDict["狼人1"]
-            # w2 = playersDict["狼人2"]
-            # w3 = playersDict["狼人3"]
-            t1 = client.get_channel(textRooms[w1.number - 1])
-            # t2 = client.get_channel(textRooms[w2.number - 1])
-            # t3 = client.get_channel(textRooms[w3.number - 1])
-
-            votes = {
-                1: [],
-                2: [],
-                3: [],
-                4: [],
-                5: [],
-                6: [],
-                7: [],
-                8: [],
-                9: []
-            }
-
-            eliminator = 1
-            flatVoteList = []
-            for player in playersList:
-                if player.out is False and player.identity == id.wolf:
-                    votes[player.vote].append(player.number)
-
-            for candidate, votersList in votes.items():
-                if (len(votersList) == len(votes[eliminator])):
-                    if (eliminator not in flatVoteList):
-                        flatVoteList.append(eliminator)
-                    if (candidate not in flatVoteList):
-                        flatVoteList.append(candidate)
-
-                elif (len(votersList) > len(votes[eliminator])):
-                    eliminator = candidate
-                    flatVoteList.clear()
-
-            if (len(flatVoteList) > 1):
-                await t1.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-                # await t2.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-                # await t3.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-            else:
-                await t1.send(str(eliminator) + " 号玩家已被刺杀")
-                # await t2.send(str(eliminator) + " 号玩家已被刺杀")
-                # await t3.send(str(eliminator) + " 号玩家已被刺杀")
-                playersList[eliminator - 1].survivalStatus = 1
-
-            print(eliminator)
-
-            stage = stage.女巫阶段
-            stageLock = False
-
-
-
-        if stage is stage.女巫阶段 and stageLock is False:
-            stageLock = True
-            t = 10
-            msgsList = []
-            dyingPlayer = -100
-            for p in playersList:
-                if p.survivalStatus == 1:
-                    dyingPlayer = p.number
-
-            for p in playersList:
-                if p.identity is id.witch:
-                    #playersDict["女巫"] = p
-                    textChannel = client.get_channel(textRooms[p.number - 1])
-                    await textChannel.send(
-                        "女巫请睁眼，昨晚玩家"+ str(dyingPlayer) +"死了，你有一瓶解药，要救吗？如果要救，请输入!save playerNumber" +
-                        "\n你有一瓶毒药，要用吗？毒谁？ 如果要毒，请输入!poison playerNumber" +
-                        "\n你只能做出一个选择",
-                        tts=False, delete_after=40)
-                    await textChannel.send("女巫阶段: 存活玩家 {}".format(getSurvivals()))
-                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=40) )
-                else:
-                    textChannel = client.get_channel(textRooms[p.number - 1])
-                    await textChannel.send(
-                        "女巫睁眼阶段",
-                        tts=False, delete_after=40)
-                    msgsList.append( await textChannel.send("剩余时间: " + str(t), delete_after=40) )
-
-            while t > 0:
-                time.sleep(1)
-                t -= 1
-
-                for eachMsg in msgsList:
-                    await eachMsg.edit(content="剩余时间: " + str(t))
-                    if(t == 0):
-                        await eachMsg.delete()
-
-            stage = stage.公布昨晚
-            stageLock = False
-
-        if stage is stage.公布昨晚 and stageLock is False:
-            stageLock = True
-            #确认死亡玩家
-            deadList = []
-            for p in playersList:
-                if p.survivalStatus == 1:
-                    p.survivalStatus = 0
-                    deadList.append(p.number)
-
-            announc_channal = client.get_channel(919369647109836830)
-
-
-            if(len(deadList) > 0):
-                await announc_channal.send("昨晚这些玩家死亡 {}".format(deadList))
-            else:
-                await announc_channal.send("昨晚是平安夜")
-            announc_channal = client.get_channel(919369647109836830)
-            await announc_channal.send("存活玩家 {}".format( getSurvivals() ))
-
-            #检测是否有能发动技能的身份
-            for d in deadList:
-                if playersList[d-1].identity == id.hunter:
-                    textChannel = client.get_channel(textRooms[d-1])
-                    await textChannel.send("玩家 " + str(d) +" 是否发动技能? 请选择射杀对象 !shoot playerNumber")
-
-            t = 30
-            await announc_channal.send("等待发动技能...", delete_after=40)
-            editMsg = await announc_channal.send("公布昨晚结果阶段 剩余时间:" + str(t))
-            while t > 0:
-
-                time.sleep(1)
-                t-=1
-                await editMsg.edit(content="公布昨晚结果阶段 - 剩余时间:" + str(t))
-
-            #发表遗言阶段
-            #if(daysCount == 1):
-
-
-            #确认出局
-            for d in deadList:
-                playersList[d-1].out = True
-
-            deadList.clear()
-            stage = stage.day #正式发言阶段
-            stageLock = False
-
-
-
-
-        if stage is stage.day and stageLock is False:
-            stageLock = True
-
-            announc_channal = client.get_channel(919369647109836830)
-            await announc_channal.send("存活玩家 {}".format( getSurvivals() ))
-
-            for i in range(0, len(playersList)):
-                to_channel = client.get_channel(919306850493677578)
-                if playersList[i].survivalStatus == 2:
-                    await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
-                    await playersList[i].member.edit(mute=True)
-
-            for j in range(0, requiredPlayerNum):
-                tt = 30
-                announc_channal = client.get_channel(919369647109836830)
-                editMsg = await announc_channal.send("正式发言阶段 剩余时间:" + str(t))
-                while tt > 0:
-                    # if (t % 10 == 0 and t > 10) or (t <= 5):
-                    await playersList[j].member.edit(mute=False)
-                    time.sleep(1)
-                    tt -= 1
-                    editMsg.edit(content="正式发言阶段 剩余时间:" + str(t))
-                    if dayflag is True:
-                        print("break")
-                        break
-                    print(tt)
-                    if tt == 1:
-                        await playersList[j].member.edit(mute=True)
-            stageLock = False
 
 
     if message.content.find("!check") != -1 and stage is stage.prophet_check:
