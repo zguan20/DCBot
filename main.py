@@ -749,6 +749,7 @@ async def on_message(message):
                                 await playersList[i].member.edit(mute=False)
 
                             await announc_channal.send("你们可以开始复盘了!")#123
+                            print("1.0")
 
                             break
 
