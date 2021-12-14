@@ -748,7 +748,7 @@ async def on_message(message):
                                 await playersList[i].member.move_to(to_channel)  # move all players to group channel
                                 await playersList[i].member.edit(mute=False)
 
-                            await announc_channal.send("你们可以开始复盘了!")
+                            await announc_channal.send("你们可以开始复盘了!")#123
 
                             break
 
