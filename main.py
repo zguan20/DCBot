@@ -439,7 +439,7 @@ async def on_message(message):
                 if skills.witch_poison in playersDict["女巫"].skills:
 
                     if target.out is False:
-                        target.survivalStatus = 1
+                        target.survivalStatus = 0
                         playersDict["女巫"].skills.remove(skills.witch_poison)
                         textChannel = client.get_channel(textRooms[playersDict["女巫"].number - 1])
                         await textChannel.send("你对玩家" + str(target.number) + "使用了毒药")
