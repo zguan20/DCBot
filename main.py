@@ -661,7 +661,7 @@ async def on_message(message):
                         # 确认死亡玩家
                         deadList = []
                         for p in playersList:
-                            if p.survivalStatus == 1:
+                            if p.survivalStatus == 1 and (p.survivalStatus == 0 and p.out is False):
                                 deadList.append(p.number)
 
                         announc_channal = client.get_channel(919369647109836830)
