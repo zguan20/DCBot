@@ -439,8 +439,7 @@ async def on_message(message):
                 if skills.witch_poison in playersDict["女巫"].skills:
 
                     if target.out is False:
-                        target.survivalStatus = 0
-                        target.out = True
+                        target.survivalStatus = 1
                         playersDict["女巫"].skills.remove(skills.witch_poison)
                         textChannel = client.get_channel(textRooms[playersDict["女巫"].number - 1])
                         await textChannel.send("你对玩家" + str(target.number) + "使用了毒药")
@@ -662,7 +661,7 @@ async def on_message(message):
                         # 确认死亡玩家
                         deadList = []
                         for p in playersList:
-                            if p.survivalStatus == 1 or (p.survivalStatus == 0 and p.out is False):
+                            if p.survivalStatus == 1:
                                 deadList.append(p.number)
 
                         announc_channal = client.get_channel(919369647109836830)
