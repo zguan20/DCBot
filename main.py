@@ -780,8 +780,9 @@ async def on_message(message):
                             await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
                             await playersList[i].member.edit(mute=True)
 
-
-                        for p in playersList:
+                        j = 0
+                        while j < len(playersList):
+                            p = playersList[j]
                             if p.out is False:
                                 tt = 5
                                 editMsg = await announc_channal.send(str(p.number) + "号玩家正式发言阶段 剩余时间:" + str(tt))
@@ -793,7 +794,8 @@ async def on_message(message):
                                     await editMsg.edit(content=str(p.number) + "号玩家正式发言阶段 剩余时间:" + str(tt))
                                     if dayflag is True:
                                         print("break")
-                                        break
+                                        tt = -1
+                                        j = len(playersList)
                                     print(tt)
                                     if tt == 0:
                                         print("tt ==== 1")
