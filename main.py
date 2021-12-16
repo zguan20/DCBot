@@ -11,48 +11,51 @@ client = discord.Client()
 号数表 = ["一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
 
-async def countvote():
-    votes = {
-        1: [],
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-        6: [],
-        7: [],
-        8: [],
-        9: []
-    }
-    announc_channal = client.get_channel(919369647109836830)
+# async def countvote():
+#     votes = {
+#         1: [],
+#         2: [],
+#         3: [],
+#         4: [],
+#         5: [],
+#         6: [],
+#         7: [],
+#         8: [],
+#         9: []
+#     }
+#     announc_channal = client.get_channel(919369647109836830)
+#
+#     eliminator = 1
+#     flatVoteList = []
+#     for player in playersList:
+#         if player.survivalStatus is True:
+#             votes[player.vote].append(player.number)
+#     for key in votes.keys():
+#         if len(votes[key]) != 0:
+#             await announc_channal.send("{} : {}".format(key, votes[key]))
+#
+#     for candidate, votersList in votes.items():
+#         if (len(votersList) == len(votes[eliminator])):
+#             if (eliminator not in flatVoteList):
+#                 flatVoteList.append(eliminator)
+#             if (candidate not in flatVoteList):
+#                 flatVoteList.append(candidate)
+#
+#         elif (len(votersList) > len(votes[eliminator])):
+#             eliminator = candidate
+#             flatVoteList.clear()
+#
+#     if (len(flatVoteList) > 1):
+#         await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+#     else:
+#         await announc_channal.send(str(eliminator) + " is out")
+#         playersList[eliminator-1].survivalStatus = 1
+#         playersList[eliminator - 1].survivalStatus = 0
 
-    eliminator = 1
-    flatVoteList = []
-    for player in playersList:
-        if player.survivalStatus is True:
-            votes[player.vote].append(player.number)
-    for key in votes.keys():
-        if len(votes[key]) != 0:
-            await announc_channal.send("{} : {}".format(key, votes[key]))
-
-    for candidate, votersList in votes.items():
-        if (len(votersList) == len(votes[eliminator])):
-            if (eliminator not in flatVoteList):
-                flatVoteList.append(eliminator)
-            if (candidate not in flatVoteList):
-                flatVoteList.append(candidate)
-
-        elif (len(votersList) > len(votes[eliminator])):
-            eliminator = candidate
-            flatVoteList.clear()
-
-    if (len(flatVoteList) > 1):
-        await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-    else:
-        await announc_channal.send(str(eliminator) + " is out")
-        playersList[eliminator-1].survivalStatus = 1
-        playersList[eliminator - 1].survivalStatus = 0
-
-
+async def clearMsg():
+    for room in textRooms:
+        txtchannel = client.get_channel(room)
+        await txtchannel.purge(limit=500)
 
 def geneOrder():
     i = random.randint(1, 9)
@@ -759,7 +762,7 @@ async def on_message(message):
                                 to_channel = client.get_channel(919306850493677578)
                                 await playersList[i].member.move_to(to_channel)  # move all players to group channel
                                 await playersList[i].member.edit(mute=False)
-
+                            await clearMsg()
                             await announc_channal.send("你们可以开始复盘了!")#123
                             print("1.0")
 
@@ -794,7 +797,8 @@ async def on_message(message):
 
                         j = 0
                         while j < len(playersList):
-                            p = playersList[j]
+                            mylist = geneOrder()
+                            p = playersList[mylist[j]]
                             if p.out is False:
                                 tt = 5
                                 editMsg = await announc_channal.send(str(p.number) + "号玩家正式发言阶段 剩余时间:" + str(tt))
@@ -934,53 +938,6 @@ async def on_message(message):
                     player.vote = target.number
                     await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
 
-    if message.content.find("!countvote") != -1:
-        votes = {
-            1: [],
-            2: [],
-            3: [],
-            4: [],
-            5: [],
-            6: [],
-            7: [],
-            8: [],
-            9: []
-        }
-
-
-        for candidate, votersList in votes.items():
-            if(len(votersList) == len(votes[eliminator])):
-                if(eliminator not in flatVoteList):
-                    flatVoteList.append(eliminator)
-                if(candidate not in flatVoteList):
-                    flatVoteList.append(candidate)
-
-            elif(len(votersList) > len(votes[eliminator])):
-                eliminator = candidate
-                flatVoteList.clear()
-
-        if(len(flatVoteList) > 1):
-            await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-        else:
-            await announc_channal.send(str(eliminator) + " is out")
-
-            i = eliminator - 1
-            playersList[i].survivalStatus = 0
-            await playersList[i].member.edit(mute=True)
-            cur_member = playersList[i].member
-
-            ind_n = playersList[i].number - 1
-            role = discord.utils.get(cur_member.guild.roles, name=号数表[ind_n] + "号")
-            await playersList[i].remove_roles(role)
-
-            role = discord.utils.get(cur_member.guild.roles, name="凉凉")
-            await member.add_roles(role)
-            await playersList[i].member.edit(nick=cur_member.name)
-
-    # if message.content.find("!reset name") != -1:
-    #     for p in playersList:
-    #         await playersList[i].member.edit(nick=cur_member.name)
-
 
     if message.content.find("!del") != -1:
         msg = message.content
@@ -997,12 +954,5 @@ async def on_message(message):
 
     if message.content.find("*unmute") != -1:
         await member.edit(mute=False)
-
-    if message.content.find("!clear") != -1:
-        for room in textRooms:
-            txtchannel = client.get_channel(room)
-            await txtchannel.purge(limit=500)
-
-
 
 client.run(os.environ["TOKEN"])
