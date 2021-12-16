@@ -148,7 +148,7 @@ playersDict = {
 
 daysCount = 1
 stage = stage.none
-requiredPlayerNum = 3
+requiredPlayerNum = 1
 playersList = []
 readyCount = 0
 gameInProgress = False
@@ -501,6 +501,18 @@ async def on_message(message):
             await startGame()
             announc_channal = client.get_channel(919369647109836830)
             await announc_channal.send("开始游戏: 存活玩家 {}".format(getSurvivals()))
+            for p in playersList:
+                textChannel = client.get_channel(textRooms[p.number - 1])
+                if p.identity is id.wolf:
+                    await textChannel.send("你的身份是狼人")
+                if p.identity is id.civilian:
+                    await textChannel.send("你的身份是平民")
+                if p.identity is id.hunter:
+                    await textChannel.send("你的身份是猎人")
+                if p.identity is id.witch:
+                    await textChannel.send("你的身份是女巫")
+                if p.identity is id.prophet:
+                    await textChannel.send("你的身份是预言家")
             stage = stage.prophet_check
             stageLock = False
 
@@ -985,6 +997,11 @@ async def on_message(message):
 
     if message.content.find("*unmute") != -1:
         await member.edit(mute=False)
+
+    if message.content.find("!clear") != -1:
+        for room in textRooms:
+            txtchannel = client.get_channel(room)
+            await txtchannel.purge(limit=500)
 
 
 
