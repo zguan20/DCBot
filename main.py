@@ -76,8 +76,8 @@ print(geneOrder())
 
 
 class winner(enum.Enum):
-    无 = 1
-    狼人 = 2
+    无 = 3
+    狼人 = 3
     好人 = 3
 
 
@@ -816,6 +816,7 @@ async def on_message(message):
                                     if tt == 0:
                                         print("tt ==== 1")
                                         await p.member.edit(mute=True)
+                            j += 1
 
                         stageLock = False
                         stage = stage.公投阶段
