@@ -11,51 +11,48 @@ client = discord.Client()
 号数表 = ["一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
 
-# async def countvote():
-#     votes = {
-#         1: [],
-#         2: [],
-#         3: [],
-#         4: [],
-#         5: [],
-#         6: [],
-#         7: [],
-#         8: [],
-#         9: []
-#     }
-#     announc_channal = client.get_channel(919369647109836830)
-#
-#     eliminator = 1
-#     flatVoteList = []
-#     for player in playersList:
-#         if player.survivalStatus is True:
-#             votes[player.vote].append(player.number)
-#     for key in votes.keys():
-#         if len(votes[key]) != 0:
-#             await announc_channal.send("{} : {}".format(key, votes[key]))
-#
-#     for candidate, votersList in votes.items():
-#         if (len(votersList) == len(votes[eliminator])):
-#             if (eliminator not in flatVoteList):
-#                 flatVoteList.append(eliminator)
-#             if (candidate not in flatVoteList):
-#                 flatVoteList.append(candidate)
-#
-#         elif (len(votersList) > len(votes[eliminator])):
-#             eliminator = candidate
-#             flatVoteList.clear()
-#
-#     if (len(flatVoteList) > 1):
-#         await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-#     else:
-#         await announc_channal.send(str(eliminator) + " is out")
-#         playersList[eliminator-1].survivalStatus = 1
-#         playersList[eliminator - 1].survivalStatus = 0
+async def countvote():
+    votes = {
+        1: [],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+        6: [],
+        7: [],
+        8: [],
+        9: []
+    }
+    announc_channal = client.get_channel(919369647109836830)
 
-async def clearMsg():
-    for room in textRooms:
-        txtchannel = client.get_channel(room)
-        await txtchannel.purge(limit=500)
+    eliminator = 1
+    flatVoteList = []
+    for player in playersList:
+        if player.survivalStatus is True:
+            votes[player.vote].append(player.number)
+    for key in votes.keys():
+        if len(votes[key]) != 0:
+            await announc_channal.send("{} : {}".format(key, votes[key]))
+
+    for candidate, votersList in votes.items():
+        if (len(votersList) == len(votes[eliminator])):
+            if (eliminator not in flatVoteList):
+                flatVoteList.append(eliminator)
+            if (candidate not in flatVoteList):
+                flatVoteList.append(candidate)
+
+        elif (len(votersList) > len(votes[eliminator])):
+            eliminator = candidate
+            flatVoteList.clear()
+
+    if (len(flatVoteList) > 1):
+        await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+    else:
+        await announc_channal.send(str(eliminator) + " is out")
+        playersList[eliminator-1].survivalStatus = 1
+        playersList[eliminator - 1].survivalStatus = 0
+
+
 
 def geneOrder():
     i = random.randint(1, 9)
@@ -192,7 +189,7 @@ async def night():
         if playersList[i].identity == id.wolf:
             to_channel = client.get_channel(919306750929305630)
         else:
-            to_channel = client.get_channel(rooms[i])
+            to_channel = client.get_channel(rooms[i-1])
         if(playersList[i].survivalStatus == 2):
             await playersList[i].member.move_to(to_channel)  # move survival players to their corresponding channel
             await playersList[i].member.edit(mute=False)
@@ -211,8 +208,8 @@ identityList = [id.wolf, id.witch, id.hunter, id.wolf , id.wolf, id.civilian, id
 async def startGame():
 
     global rooms
-    #random.shuffle(identityList)
-    #random.shuffle(identityList)
+    random.shuffle(identityList)
+    random.shuffle(identityList)
     # random.shuffle(rooms)
     # random.shuffle(rooms)
 
@@ -235,6 +232,8 @@ async def startGame():
 
         if playersList[i].identity == id.wolf:
             to_channel = client.get_channel(919306750929305630)
+
+        await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
 
         if playersList[i].identity == id.wolf:
             playersList[i].skills = [skills.wolf_kill]
@@ -259,7 +258,7 @@ async def startGame():
             civilianCounter += 1
 
 
-        await playersList[i].member.move_to(to_channel)  # move to the corresponding channel
+
 
 
 @client.event
@@ -357,11 +356,13 @@ async def on_message(message):
                 w1.vote = playersList[int(arg_list[1]) - 1].number
                 await t1.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
 
-            #if(authorID == w2.member.id):
-                #w2.vote = playersList[int(arg_list[1]) - 1]
+            if(authorID == w2.member.id):
+                w2.vote = playersList[int(arg_list[1]) - 1]
+                await t2.send("{}号狼人 voted {}号".format(w2.number, player.vote))
 
-            #if (authorID == w3.member.id):
-                #w3.vote = playersList[int(arg_list[1]) - 1]
+            if (authorID == w3.member.id):
+                w3.vote = playersList[int(arg_list[1]) - 1]
+                await t3.send("{}号狼人 voted {}号".format(w3.number, player.vote))
 
             #await t1.send("{}号狼人 voted {}号".format(player.number, player.vote))
             #await t2.send("{}号狼人 voted {}号".format(player.number, player.vote))
@@ -518,14 +519,14 @@ async def on_message(message):
                     await textChannel.send("你的身份是预言家")
             stage = stage.prophet_check
             stageLock = False
-
+            # TODO:delete the goddanm ‘delete_after’
             while stageLock is not True:
                 if stage is stage.prophet_check and stageLock is False:
                     await night()
                     stageLock = True
                     dayflag = False
                     playersDict["女巫"].skillsFlag = False
-                    t = 5
+                    t = 30
                     msgsList = []
                     for p in playersList:
                         if p.identity is id.prophet:
@@ -762,7 +763,7 @@ async def on_message(message):
                                 to_channel = client.get_channel(919306850493677578)
                                 await playersList[i].member.move_to(to_channel)  # move all players to group channel
                                 await playersList[i].member.edit(mute=False)
-                            await clearMsg()
+
                             await announc_channal.send("你们可以开始复盘了!")#123
                             print("1.0")
 
@@ -797,8 +798,7 @@ async def on_message(message):
 
                         j = 0
                         while j < len(playersList):
-                            mylist = geneOrder()
-                            p = playersList[mylist[j]]
+                            p = playersList[j]
                             if p.out is False:
                                 tt = 5
                                 editMsg = await announc_channal.send(str(p.number) + "号玩家正式发言阶段 剩余时间:" + str(tt))
@@ -938,6 +938,53 @@ async def on_message(message):
                     player.vote = target.number
                     await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
 
+    if message.content.find("!countvote") != -1:
+        votes = {
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [],
+            9: []
+        }
+
+
+        for candidate, votersList in votes.items():
+            if(len(votersList) == len(votes[eliminator])):
+                if(eliminator not in flatVoteList):
+                    flatVoteList.append(eliminator)
+                if(candidate not in flatVoteList):
+                    flatVoteList.append(candidate)
+
+            elif(len(votersList) > len(votes[eliminator])):
+                eliminator = candidate
+                flatVoteList.clear()
+
+        if(len(flatVoteList) > 1):
+            await announc_channal.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+        else:
+            await announc_channal.send(str(eliminator) + " is out")
+
+            i = eliminator - 1
+            playersList[i].survivalStatus = 0
+            await playersList[i].member.edit(mute=True)
+            cur_member = playersList[i].member
+
+            ind_n = playersList[i].number - 1
+            role = discord.utils.get(cur_member.guild.roles, name=号数表[ind_n] + "号")
+            await playersList[i].remove_roles(role)
+
+            role = discord.utils.get(cur_member.guild.roles, name="凉凉")
+            await member.add_roles(role)
+            await playersList[i].member.edit(nick=cur_member.name)
+
+    # if message.content.find("!reset name") != -1:
+    #     for p in playersList:
+    #         await playersList[i].member.edit(nick=cur_member.name)
+
 
     if message.content.find("!del") != -1:
         msg = message.content
@@ -954,5 +1001,12 @@ async def on_message(message):
 
     if message.content.find("*unmute") != -1:
         await member.edit(mute=False)
+
+    if message.content.find("!clear") != -1:
+        for room in textRooms:
+            txtchannel = client.get_channel(room)
+            await txtchannel.purge(limit=500)
+
+
 
 client.run(os.environ["TOKEN"])
