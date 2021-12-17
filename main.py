@@ -562,7 +562,7 @@ async def on_message(message):
 
                 if stage is stage.wolf_kill and stageLock is False:
                     stageLock = True
-                    t = 10
+                    t = 30
 
                     msgsList = []
                     await announc_channal.send("狼人杀人阶段 存活玩家: {}".format(getSurvivals()), delete_after=(t + 10))
@@ -596,11 +596,11 @@ async def on_message(message):
                             await eachMsg.edit(content="剩余时间: " + str(t))
 
                     w1 = playersDict["狼人1"]
-                    # w2 = playersDict["狼人2"]
-                    # w3 = playersDict["狼人3"]
+                    w2 = playersDict["狼人2"]
+                    w3 = playersDict["狼人3"]
                     t1 = client.get_channel(textRooms[w1.number - 1])
-                    # t2 = client.get_channel(textRooms[w2.number - 1])
-                    # t3 = client.get_channel(textRooms[w3.number - 1])
+                    t2 = client.get_channel(textRooms[w2.number - 1])
+                    t3 = client.get_channel(textRooms[w3.number - 1])
 
                     votes = {
                         1: [],
@@ -633,12 +633,12 @@ async def on_message(message):
 
                     if (len(flatVoteList) > 1):
                         await t1.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-                        # await t2.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
-                        # await t3.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+                        await t2.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
+                        await t3.send("这些玩家得到了同样票数: " + "{}".format(flatVoteList))
                     else:
                         await t1.send(str(eliminator) + " 号玩家已被刺杀")
-                        # await t2.send(str(eliminator) + " 号玩家已被刺杀")
-                        # await t3.send(str(eliminator) + " 号玩家已被刺杀")
+                        await t2.send(str(eliminator) + " 号玩家已被刺杀")
+                        await t3.send(str(eliminator) + " 号玩家已被刺杀")
                         playersList[eliminator - 1].survivalStatus = 1
 
                     print(eliminator)
@@ -649,7 +649,7 @@ async def on_message(message):
 
                     if stage is stage.女巫阶段 and stageLock is False:
                         stageLock = True
-                        t = 10
+                        t = 20
                         await announc_channal.send("女巫阶段 存活玩家: {}".format(getSurvivals()), delete_after=(t+10))
 
                         msgsList = []
@@ -800,7 +800,7 @@ async def on_message(message):
                         while j < len(playersList):
                             p = playersList[j]
                             if p.out is False:
-                                tt = 5
+                                tt = 60
                                 editMsg = await announc_channal.send(str(p.number) + "号玩家正式发言阶段 剩余时间:" + str(tt))
                                 while tt > 0:
                                     # if (t % 10 == 0 and t > 10) or (t <= 5):
