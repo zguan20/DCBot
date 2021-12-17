@@ -394,10 +394,14 @@ async def on_message(message):
 
                 playersDict["猎人"].skillsFlag = True
             else:
+                # if playersDict["猎人"].skillsFlag is True:
+                #     await textChannel.send("你已经发动了该技能！")
+                # else: #被毒
                 await textChannel.send("你无法发动技能！")
+
                 return
 
-        if message.content.find("!save") != -1 and stage is stage.女巫阶段 and playersDict["女巫"].out is False:
+        if message.content.find("!save") != -1 and stage is stage.女巫阶段 and playersDict["女巫"].out is False and authorID == playersDict["女巫"].member.id :
             msg = message.content
             arg_list = msg.split(" ")
             textChannel = client.get_channel(textRooms[playersDict["女巫"].number - 1])
@@ -437,7 +441,7 @@ async def on_message(message):
                 textChannel = client.get_channel(textRooms[playersDict["女巫"].number - 1])
                 await textChannel.send("本回合你已经用过毒药")
 
-        if message.content.find("!poison") != -1 and stage is stage.女巫阶段 and playersDict["女巫"].out is False:
+        if message.content.find("!poison") != -1 and stage is stage.女巫阶段 and playersDict["女巫"].out is False and authorID == playersDict["女巫"].member.id:
             msg = message.content
             arg_list = msg.split(" ")
 
@@ -526,6 +530,11 @@ async def on_message(message):
                     stageLock = True
                     dayflag = False
                     playersDict["女巫"].skillsFlag = False
+
+                    #reset players votes
+                    for p in playersList:
+                        p.vote = -1
+
                     t = 30
                     msgsList = []
                     for p in playersList:
@@ -667,7 +676,7 @@ async def on_message(message):
                                     "\n你有一瓶毒药，要用吗？毒谁？ 如果要毒，请输入!poison playerNumber" +
                                     "\n你只能做出一个选择",
                                     tts=False)
-                                await textChannel.send("存活玩家: {}".format(getSurvivals()))
+                                await textChannel.send("女巫阶段 存活玩家: {}".format(getSurvivals()))
                                 msgsList.append(await textChannel.send("剩余时间: " + str(t)))
                             else:
                                 textChannel = client.get_channel(textRooms[p.number - 1])
