@@ -357,27 +357,27 @@ async def on_message(message):
             if(authorID == w1.member.id and w1.out is False):
                 if target.out is False:
                     w1.vote = target.number
-                    await t1.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
-                    await t2.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
-                    await t3.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
+                    await t1.send("第 " + daysCount + " 天, (你) {}号狼人 voted {}号".format(w1.number, w1.vote))
+                    await t2.send("第 " + daysCount + " 天, (同伴) {}号狼人voted {}号".format(w1.number, w1.vote))
+                    await t3.send("第 " + daysCount + " 天, (同伴) {}号狼人 voted {}号".format(w1.number, w1.vote))
                 else:
                     await t1.send("你所选的玩家已出局 请重新投票")
 
             if(authorID == w2.member.id and w2.out is False):
                 if target.out is False:
                     w2.vote = target.number
-                    await t2.send("{}号狼人 voted {}号".format(w2.number, w2.vote))
-                    await t1.send("{}号狼人 voted {}号".format(w2.number, w2.vote))
-                    await t3.send("{}号狼人 voted {}号".format(w2.number, w2.vote))
+                    await t2.send("第 " + daysCount + " 天, (你) {}号狼人 voted {}号".format(w2.number, w2.vote))
+                    await t1.send("第 " + daysCount + " 天, (同伴) {}号狼人 voted {}号".format(w2.number, w2.vote))
+                    await t3.send("第 " + daysCount + " 天, (同伴) {}号狼人 voted {}号".format(w2.number, w2.vote))
                 else:
                     await t2.send("你所选的玩家已出局 请重新投票")
 
             if (authorID == w3.member.id and w3.out is False):
                 if target.out is False:
                     w3.vote = target.number
-                    await t3.send("{}号狼人 voted {}号".format(w3.number, w3.vote))
-                    await t1.send("{}号狼人 voted {}号".format(w3.number, w3.vote))
-                    await t2.send("{}号狼人 voted {}号".format(w3.number, w3.vote))
+                    await t3.send("第 " + daysCount + " 天, (你) {}号狼人 voted {}号".format(w3.number, w3.vote))
+                    await t1.send("第 " + daysCount + " 天, (同伴) {}号狼人 voted {}号".format(w3.number, w3.vote))
+                    await t2.send("第 " + daysCount + " 天, (同伴) {}号狼人 voted {}号".format(w3.number, w3.vote))
                 else:
                     await t3.send("你所选的玩家已出局 请重新投票")
 
@@ -525,7 +525,7 @@ async def on_message(message):
             await message.channel.send("Game started")
             await startGame()
             announc_channal = client.get_channel(919369647109836830)
-            await announc_channal.send("开始游戏: 存活玩家 {}".format(getSurvivals()))
+            await announc_channal.send("开始游戏:  目前场上的存活玩家为: {}".format(getSurvivals()))
             for p in playersList:
                 textChannel = client.get_channel(textRooms[p.number - 1])
                 if p.identity is id.wolf:
@@ -560,7 +560,7 @@ async def on_message(message):
                             await textChannel.send(
                                 "预言家，你要查验谁? 请按照格式\n!check playerNumber 来进行输入和查验。\n例如: !check 1 代表你要查验1号玩家的身份。 请确保关闭输入法。",
                                 tts=False)
-                            await textChannel.send("预言家查验阶段 存活玩家: {}".format(getSurvivals()))
+                            await textChannel.send("预言家查验阶段 目前场上的存活玩家为: {}".format(getSurvivals()))
                             msgsList.append(await textChannel.send("剩余时间: " + str(t)))
                         else:
                             textChannel = client.get_channel(textRooms[p.number - 1])
@@ -591,7 +591,7 @@ async def on_message(message):
                     t = 30
 
                     msgsList = []
-                    await announc_channal.send("狼人杀人阶段 存活玩家: {}".format(getSurvivals()))
+                    await announc_channal.send("狼人杀人阶段  目前场上的存活玩家为: {}".format(getSurvivals()))
                     await announc_channal.send(
                         "狼人在杀人...",
                         tts=False)
@@ -604,7 +604,7 @@ async def on_message(message):
                             await textChannel.send(
                                 "狼人请杀人 输入指令!kill playerNumber",
                                 tts=False)
-                            await textChannel.send("狼人杀人阶段 存活玩家: {}".format(getSurvivals()))
+                            await textChannel.send("狼人杀人阶段  目前场上的存活玩家为: {}".format(getSurvivals()))
                             msgsList.append(await textChannel.send("剩余时间: " + str(t)))
                         else:
                             textChannel = client.get_channel(textRooms[p.number - 1])
@@ -676,7 +676,7 @@ async def on_message(message):
                     if stage is stage.女巫阶段 and stageLock is False:
                         stageLock = True
                         t = 20
-                        await announc_channal.send("女巫阶段 存活玩家: {}".format(getSurvivals()))
+                        await announc_channal.send("这行提示debug使用: 女巫阶段  目前场上的存活玩家为: {}".format(getSurvivals()))
 
                         msgsList = []
                         dyingPlayer = -100
@@ -693,7 +693,7 @@ async def on_message(message):
                                     "\n你有一瓶毒药，要用吗？毒谁？ 如果要毒，请输入!poison playerNumber" +
                                     "\n你只能做出一个选择",
                                     tts=False)
-                                await textChannel.send("女巫阶段 存活玩家: {}".format(getSurvivals()))
+                                await textChannel.send("女巫阶段  目前场上的存活玩家为: {}".format(getSurvivals()))
                                 msgsList.append(await textChannel.send("剩余时间: " + str(t)))
                             else:
                                 textChannel = client.get_channel(textRooms[p.number - 1])
@@ -748,7 +748,7 @@ async def on_message(message):
                             if playersList[d - 1].identity == id.hunter:
                                 textChannel = client.get_channel(textRooms[d - 1])
                                 await textChannel.send("玩家 " + str(d) + " 是否发动技能? 请选择射杀对象 !shoot playerNumber")
-                                await textChannel.send("存活玩家: {}".format(getSurvivals()))
+                                await textChannel.send("猎人发动技能阶段  目前场上的存活玩家为: {}".format(getSurvivals()))
 
                         t = 5
                         editMsg = await announc_channal.send("等待玩家发动技能阶段... 剩余时间:" + str(t))
@@ -797,7 +797,7 @@ async def on_message(message):
 
                         if laststage is stage.女巫阶段:
                             await announc_channal.send("公布昨晚的结果")
-                            await announc_channal.send("第 " + str(daysCount) + " 天  存活玩家: {}".format(getSurvivals()))
+                            await announc_channal.send("第 " + str(daysCount) + " 天   目前场上的存活玩家为: {}".format(getSurvivals()))
                             if (len(deadList) > 0):
                                 await announc_channal.send("昨晚这些玩家死亡 {}".format(deadList))
                             else:
@@ -962,8 +962,12 @@ async def on_message(message):
             target = playersList[int(arg_list[1]) - 1]
             if player.member == message.author:
                 if player.survivalStatus == 2 and target.survivalStatus == 2:
+                    txtChannel = client.get_channel(textRooms[player.number - 1])
                     player.vote = target.number
-                    await announc_channal.send("{}号 voted {}号".format(player.number, player.vote))
+                    await txtChannel.send("第 " + daysCount + " 天, (你) {}号 voted {}号".format(player.number, player.vote))
+                    await announc_channal.send("第 " + daysCount + " 天, {}号 voted {}号".format(player.number, player.vote))
+                else:
+                    await txtChannel.send("你所选的玩家已出局 请重选")
 
     if message.content.find("!countvote") != -1:
         votes = {
