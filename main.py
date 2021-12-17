@@ -76,8 +76,8 @@ print(geneOrder())
 
 
 class winner(enum.Enum):
-    无 = 3
-    狼人 = 3
+    无 = 1
+    狼人 = 2
     好人 = 3
 
 
@@ -495,9 +495,9 @@ async def on_message(message):
 
         if message.content.find("!start") != -1 and readyCount >= requiredPlayerNum:
             gameInProgress = True
-            num_hero = 1
+            num_hero = 3
             num_civilian = 3
-            num_wolf = 1
+            num_wolf = 3
 
             for key in membersDict.keys():
                 playersList.append(Player(membersDict[key], key))
