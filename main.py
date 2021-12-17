@@ -352,17 +352,34 @@ async def on_message(message):
                 await t1.send("请输入!kill playerNumber")
                 return
 
-            if(authorID == w1.member.id):
-                w1.vote = playersList[int(arg_list[1]) - 1].number
-                await t1.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
+            target = playersList[int(arg_list[1]) - 1]
 
-            if(authorID == w2.member.id):
-                w2.vote = playersList[int(arg_list[1]) - 1]
-                await t2.send("{}号狼人 voted {}号".format(w2.number, player.vote))
+            if(authorID == w1.member.id and w1.out is False):
+                if target.out is False:
+                    w1.vote = target.number
+                    await t1.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
+                    await t2.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
+                    await t3.send("{}号狼人 voted {}号".format(w1.number, w1.vote))
+                else:
+                    await t1.send("你所选的玩家已出局 请重新投票")
 
-            if (authorID == w3.member.id):
-                w3.vote = playersList[int(arg_list[1]) - 1]
-                await t3.send("{}号狼人 voted {}号".format(w3.number, player.vote))
+            if(authorID == w2.member.id and w2.out is False):
+                if target.out is False:
+                    w2.vote = target.number
+                    await t2.send("{}号狼人 voted {}号".format(w2.number, w2.vote))
+                    await t1.send("{}号狼人 voted {}号".format(w2.number, w2.vote))
+                    await t3.send("{}号狼人 voted {}号".format(w2.number, w2.vote))
+                else:
+                    await t2.send("你所选的玩家已出局 请重新投票")
+
+            if (authorID == w3.member.id and w3.out is False):
+                if target.out is False:
+                    w3.vote = target.number
+                    await t3.send("{}号狼人 voted {}号".format(w3.number, w3.vote))
+                    await t1.send("{}号狼人 voted {}号".format(w3.number, w3.vote))
+                    await t2.send("{}号狼人 voted {}号".format(w3.number, w3.vote))
+                else:
+                    await t3.send("你所选的玩家已出局 请重新投票")
 
             #await t1.send("{}号狼人 voted {}号".format(player.number, player.vote))
             #await t2.send("{}号狼人 voted {}号".format(player.number, player.vote))
