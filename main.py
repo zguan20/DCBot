@@ -425,12 +425,13 @@ async def on_message(message):
 
                 playersDict["猎人"].skillsFlag = True
             else:
-                # if playersDict["猎人"].skillsFlag is True:
-                #     await textChannel.send("你已经发动了该技能！")
-                # else: #被毒
-                await textChannel.send("你无法发动技能！")
+                await textChannel.send("你已经发动了该技能！")
 
                 return
+        else:
+            # 被毒
+            if playersDict["猎人"].survivalStatus == 0 and playersDict["猎人"].out is False and authorID == playersDict["猎人"].member.id:
+                await textChannel.send("你无法发动技能！")
 
         if message.content.find("!save") != -1 and stage is stage.女巫阶段 and playersDict["女巫"].out is False and authorID == playersDict["女巫"].member.id :
             msg = message.content
@@ -1065,6 +1066,7 @@ async def on_message(message):
                             else:
                                 await message.channel.send(
                                     "玩家" + str(targetNum) + "号的身份是好人")
+                            playersDict["预言家"].skillsFlag = True
         else:
             await message.channel.send("无法重复验人")
 
