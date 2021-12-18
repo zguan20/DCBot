@@ -345,8 +345,10 @@ async def on_message(message):
         if message.content.find("!skip") != -1 and stage is stage.day:
             for p in playersList:
                 if p.member.id == authorID:
-                    if not p.member.VoiceState.mute:
+                    if not p.member.voice.mute:
                         skipflag = True
+                    else:
+                        await message.channel.send("非发言阶段无法跳过")
 
         if message.content.find("!kill") != -1 and stage is stage.wolf_kill:
 
@@ -514,16 +516,16 @@ async def on_message(message):
         #         if p.survivalStatus == 1:
         #             p.survivalStatus = 0
 
-        if message.content.find("!unready") != -1:
-
-            for count, theMember in membersDict.items():
-                if authorID == theMember.id:
-                    membersDict.pop(count)
-                    readyCount -= 1
-                    await message.channel.send(
-                        str(member) + " is unready. Need " + str(
-                            requiredPlayerNum - readyCount) + " more players to start")
-                    break
+        # if message.content.find("!unready") != -1:
+        #
+        #     for count, theMember in membersDict.items():
+        #         if authorID == theMember.id:
+        #             membersDict.pop(count)
+        #             readyCount -= 1
+        #             await message.channel.send(
+        #                 str(member) + " is unready. Need " + str(
+        #                     requiredPlayerNum - readyCount) + " more players to start")
+        #             break
 
 
 
@@ -1182,6 +1184,8 @@ async def on_message(message):
             txtchannel = client.get_channel(room)
             await txtchannel.purge(limit=500)
 
+    if message.content.find("!tt") != -1:
+        print(not message.author.voice.mute)
 
 
 client.run(os.environ["TOKEN"])
