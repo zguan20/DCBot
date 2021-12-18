@@ -302,6 +302,7 @@ async def on_message(message):
     global num_hero
     global num_civilian
     global num_wolf
+    global skipflag
     playersDict = main.playersDict
     dayflag = False
     authorID = message.author.id
@@ -332,9 +333,20 @@ async def on_message(message):
 
 
         if message.content.find("!boom") != -1 and stage is stage.day:
-            print("自爆")
-            dayflag = True
-            await night()
+            for p in playersList:
+                if p.member.id == message.author.id:
+                    if p.identity == id.wolf:
+                        announc_channal.send("狼人自爆，直接进入黑夜")
+                        dayflag = True
+                        await night()
+                    else:
+                        message.channel.send("好人无法自爆")
+
+        if message.content.find("!skip") != -1 and stage is stage.day:
+            for p in playersList:
+                if p.member.id == authorID:
+                    if not p.member.VoiceState.mute:
+                        skipflag = True
 
         if message.content.find("!kill") != -1 and stage is stage.wolf_kill:
 
@@ -521,7 +533,7 @@ async def on_message(message):
             num_hero = 3
             num_civilian = 3
             num_wolf = 3
-
+            skipflag = False
             for key in membersDict.keys():
                 playersList.append(Player(membersDict[key], key))
             await message.channel.send("Game started")
@@ -549,6 +561,7 @@ async def on_message(message):
                     stageLock = True
                     dayflag = False
                     playersDict["女巫"].skillsFlag = False
+                    playersDict["预言家"].skillsFlag = False
 
                     #reset players votes
                     for p in playersList:
@@ -851,6 +864,10 @@ async def on_message(message):
                                         print("break")
                                         tt = -1
                                         j = len(playersList)
+                                    if skipflag is True:
+                                        await announc_channal.send("玩家" + str(p.number) + "号跳过发言阶段")
+                                        tt = 0
+                                        skipflag = False
                                     print(tt)
                                     if tt == 0:
                                         print("tt ==== 1")
@@ -1032,15 +1049,22 @@ async def on_message(message):
 
     if message.content.find("!check") != -1 and stage is stage.prophet_check:
         print(66666666)
-        msg = message.content
-        arg_list = msg.split(" ")
-        if len(arg_list) > 1:
-            targetNum = int(arg_list[1])
-            for player in playersList:
-                if player.member == message.author:
-                    if player.survivalStatus == 2:  # and player.identity == id.prophet
-                        await message.channel.send(
-                            "Player " + str(targetNum) + "s identity is: " + str(playersList[targetNum - 1].identity))
+        if playersDict["预言家"].skillsFlag is False:
+            msg = message.content
+            arg_list = msg.split(" ")
+            if len(arg_list) > 1:
+                targetNum = int(arg_list[1])
+                for player in playersList:
+                    if player.member == message.author:
+                        if player.survivalStatus == 2 and player.identity is id.prophet:
+                            if playersList[targetNum - 1].identity is id.wolf:
+                                await message.channel.send(
+                                    "玩家" + str(targetNum) + "号的身份是狼人")
+                            else:
+                                await message.channel.send(
+                                    "玩家" + str(targetNum) + "号的身份是好人")
+        else:
+            await message.channel.send("无法重复验人")
 
 
 
