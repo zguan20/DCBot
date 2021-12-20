@@ -20,6 +20,8 @@ client = discord.Client()
 遗言时间 = 40
 
 
+
+
 async def countvote():
     votes = {
         1: [],
@@ -217,6 +219,12 @@ async def day():
 # identityList = [id.wolf, id.wolf, id.wolf, id.civilian, id.civilian, id.civilian, id.prophet, id.witch, id.hunter]
 identityList = [id.wolf, id.witch, id.hunter, id.wolf, id.wolf, id.civilian, id.civilian, id.civilian, id.prophet]
 
+def resetGame():
+    playersList.clear()
+    membersDict.clear()
+    playersDict.clear()
+    main.daysCount = 0
+    main.readyCount = 0
 
 async def startGame():
     global rooms
@@ -226,6 +234,7 @@ async def startGame():
     wolfCounter = 1
     announc_channal = client.get_channel(919369647109836830)
     await announc_channal.send("正在分配身份...")
+
     for i in range(0, len(playersList)):
         playersList[i].identity = identityList[i]  # identityList[i] #assign id to player
         cur_member = playersList[i].member
@@ -267,7 +276,6 @@ async def startGame():
         # print(playersList[i].number)
 
         to_channel = client.get_channel(rooms[i])
-
         if playersList[i].identity == id.wolf:
             to_channel = client.get_channel(919306750929305630)
 
@@ -361,6 +369,8 @@ async def on_message(message):
             for p in playersList:
                 if p.member.id == message.author.id:
                     if p.identity == id.wolf:
+                        p.survivalStatus = 0
+                        p.out = True
                         announc_channal.send("狼人自爆，直接进入黑夜")
                         dayflag = True
                         await night()
@@ -818,6 +828,7 @@ async def on_message(message):
                         for d in deadList:
                             if playersList[d - 1].survivalStatus == 1 and daysCount == 1:
                                 遗言list.append(playersList[d-1])
+                                print("someone die")
                                 # await announc_channal.send(str(d) + " 号玩家已被刺杀,请发表遗言")
                                 # p = playersList[d - 1]
                                 # t = main.遗言时间
@@ -854,7 +865,7 @@ async def on_message(message):
                                 to_channel = client.get_channel(919306850493677578)
                                 await playersList[i].member.move_to(to_channel)  # move all players to group channel
                                 await playersList[i].member.edit(mute=False)
-
+                            resetGame()
                             await announc_channal.send("你们可以开始复盘了!")  # 123
                             print("1.0")
 
@@ -902,8 +913,9 @@ async def on_message(message):
                                     await p.member.edit(mute=True)
 
                         j = 0
+                        mlist = geneOrder()
                         while j < len(playersList):
-                            p = playersList[j]
+                            p = playersList[mlist[j]-1]
                             if p.out is False:
                                 tt = main.发言时间
                                 editMsg = await announc_channal.send(str(p.number) + "号玩家正式发言阶段 剩余时间:" + str(tt))
@@ -921,7 +933,7 @@ async def on_message(message):
                                         await announc_channal.send("玩家" + str(p.number) + "号跳过发言阶段")
                                         tt = 0
                                         skipflag = False
-                                    print(tt)
+                                    # print(tt)
                                     if tt == 0:
                                         print("tt ==== 1")
                                         await p.member.edit(mute=True)
@@ -1088,7 +1100,7 @@ async def on_message(message):
                                 to_channel = client.get_channel(919306850493677578)
                                 await playersList[i].member.move_to(to_channel)  # move all players to group channel
                                 await playersList[i].member.edit(mute=False)
-
+                            resetGame()
                             await announc_channal.send("你们可以开始复盘了!")  # 123
                             print("1.0")
 
@@ -1118,24 +1130,25 @@ async def on_message(message):
         if len(arg_list) > 1:
             targetNum = int(arg_list[1])
             for player in playersList:
-                if player.member == message.author and player.identity is id.prophet:
-                    if player.survivalStatus == 2:
-                        if playersDict["预言家"].skillsFlag is False:
-                            playersDict["预言家"].skillsFlag = True
-                            if playersList[targetNum - 1].identity is id.wolf:
-                                await message.channel.send(
-                                    "玩家" + str(targetNum) + "号的身份是狼人")
+                if player.member == message.author:
+                    if player.identity is id.prophet:
+                        if player.survivalStatus == 2:
+                            if playersDict["预言家"].skillsFlag is False:
+                                playersDict["预言家"].skillsFlag = True
+                                if playersList[targetNum - 1].identity is id.wolf:
+                                    await message.channel.send(
+                                        "玩家" + str(targetNum) + "号的身份是狼人")
+                                else:
+                                    await message.channel.send(
+                                        "玩家" + str(targetNum) + "号的身份是好人")
                             else:
-                                await message.channel.send(
-                                    "玩家" + str(targetNum) + "号的身份是好人")
+                                await message.channel.send("无法重复验人")
                         else:
-                            await message.channel.send("无法重复验人")
+                            await message.channel.send(
+                                "淘汰后无法验人")
                     else:
                         await message.channel.send(
-                            "淘汰后无法验人")
-                else:
-                    await message.channel.send(
-                        "把眼睛给我闭上")
+                            "把眼睛给我闭上")
 
 
     # if message.content.find("!boom") != -1 and stage is stage.day:
